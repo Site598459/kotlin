@@ -53036,12 +53036,6 @@ public class LLReversedBlackBoxTestGenerated extends AbstractLLReversedBlackBoxT
       }
 
       @Test
-      @TestMetadata("kt11969.kt")
-      public void testKt11969() {
-        runTest("compiler/testData/codegen/box/reflection/enclosing/kt11969.kt");
-      }
-
-      @Test
       @TestMetadata("kt45907.kt")
       public void testKt45907() {
         runTest("compiler/testData/codegen/box/reflection/enclosing/kt45907.kt");
