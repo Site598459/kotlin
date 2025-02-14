@@ -628,13 +628,24 @@ class ScriptingHostTest {
 
     @Test
     fun testCompileOptionsLanguageVersion() {
-        val script = "value class Holder<T>(val value: T)"
+        val script = """
+            fun test(a: Any) {
+                when (a) {
+                    is Int if a > 10 -> {}
+                    else -> {}
+                }
+            }
+        """.trimIndent()
         val compilationConfiguration1 = createJvmCompilationConfigurationFromTemplate<SimpleScriptTemplate> {
-            compilerOptions(CommonCompilerArguments::languageVersion.cliArgument, "1.7")
+            compilerOptions(
+                CommonCompilerArguments::languageVersion.cliArgument, "1.8",
+                CommonCompilerArguments::suppressVersionWarnings.cliArgument,
+                CommonCompilerArguments::whenGuards.cliArgument,
+            )
         }
         val res = BasicJvmScriptingHost().eval(script.toScriptSource(), compilationConfiguration1, null)
         assertTrue(res is ResultWithDiagnostics.Failure)
-        res.reports.find { it.message.startsWith("The feature \"generic inline class parameter\" is only available since language version 1.8") }
+        res.reports.find { it.message.startsWith("The feature \"when guards\" is not supported in language versions 1.*, please use version 2.0 or later") }
             ?: fail("Error report about language version not found. Reported:\n  ${res.reports.joinToString("\n  ") { it.message }}")
     }
 

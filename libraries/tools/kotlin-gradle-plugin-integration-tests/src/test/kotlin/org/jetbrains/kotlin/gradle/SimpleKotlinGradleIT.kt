@@ -75,7 +75,7 @@ class SimpleKotlinGradleIT : KGPBaseTest() {
     fun testLanguageVersion(gradleVersion: GradleVersion) {
         project("languageVersion", gradleVersion) {
             buildAndFail("build") {
-                assertOutputContains("The feature \"generic inline class parameter\" is only available since language version 1.8")
+                assertOutputContains("The feature \"when guards\" is experimental and should be enabled explicitly.")
             }
         }
     }

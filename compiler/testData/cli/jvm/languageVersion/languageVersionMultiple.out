@@ -1,2 +1,5 @@
 warning: argument -language-version is passed multiple times. Only the last value will be used: 2.2
-OK
+compiler/testData/cli/jvm/languageVersion/languageVersion.kt:5:16: error: the feature "when guards" is experimental and should be enabled explicitly. This can be done by supplying the compiler argument '-Xwhen-guards', but note that no stability guarantees are provided.
+        is Int if a > 10 -> {}
+               ^^^^^^^^^
+COMPILATION_ERROR

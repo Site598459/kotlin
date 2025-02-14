@@ -1,5 +1,5 @@
-warning: language version 1.7 is deprecated and its support will be removed in a future version of Kotlin
-compiler/testData/cli/js/languageVersion.kt:3:34: error: the feature "generic inline class parameter" is only available since language version 1.8
-value class Holder<T>(val value: T)
-                                 ^
+warning: language version 1.9 is deprecated and its support will be removed in a future version of Kotlin
+compiler/testData/cli/js/languageVersion.kt:5:16: error: the feature "when guards" is not supported in language versions 1.*, please use version 2.0 or later
+        is Int if a > 10 -> {}
+               ^^^^^^^^^
 COMPILATION_ERROR

@@ -1,3 +1,8 @@
 package test
 
-value class Holder<T>(val value: T)
+fun test(a: Any) {
+    when (a) {
+        is Int if a > 10 -> {}
+        else -> {}
+    }
+}
