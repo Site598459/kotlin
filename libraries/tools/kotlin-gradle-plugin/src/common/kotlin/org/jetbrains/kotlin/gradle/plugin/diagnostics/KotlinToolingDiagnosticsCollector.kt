@@ -18,11 +18,7 @@ import java.util.concurrent.ConcurrentHashMap
 private typealias ToolingDiagnosticId = String
 private typealias GradleProjectPath = String
 
-internal interface KotlinToolingDiagnosticsCollectorParameters : BuildServiceParameters {
-    val problemsService: Property<KotlinToolingProblemsService>
-}
-
-internal abstract class KotlinToolingDiagnosticsCollector : BuildService<KotlinToolingDiagnosticsCollectorParameters> {
+internal abstract class KotlinToolingDiagnosticsCollector : BuildService<BuildServiceParameters.None> {
     /**
      * When collector is in transparent mode, any diagnostics received will be immediately rendered
      * instead of collected
@@ -46,9 +42,6 @@ internal abstract class KotlinToolingDiagnosticsCollector : BuildService<KotlinT
         if (reportedIds.add(key) || !reportOnce) {
             handleDiagnostic(project, diagnostic)
         }
-
-        val problems = parameters.problemsService.get()
-        problems.reportProblemDiagnostic(diagnostic)
     }
 
     fun report(
@@ -73,9 +66,6 @@ internal abstract class KotlinToolingDiagnosticsCollector : BuildService<KotlinT
                 renderReportedDiagnostic(diagnostic, logger, options)
             }
         }
-
-        val problems = parameters.problemsService.get()
-        problems.reportProblemDiagnostic(diagnostic)
     }
 
     fun switchToTransparentMode() {
@@ -87,6 +77,7 @@ internal abstract class KotlinToolingDiagnosticsCollector : BuildService<KotlinT
         if (diagnostic.isSuppressed(options)) return
 
         if (isTransparent) {
+            project.problemsReporter.reportProblemDiagnostic(diagnostic)
             renderReportedDiagnostic(diagnostic, project.logger, options)
             return
         }
@@ -102,9 +93,7 @@ internal abstract class KotlinToolingDiagnosticsCollector : BuildService<KotlinT
 }
 
 internal val Project.kotlinToolingDiagnosticsCollectorProvider: Provider<KotlinToolingDiagnosticsCollector>
-    get() = gradle.registerClassLoaderScopedBuildService(KotlinToolingDiagnosticsCollector::class) {
-        it.parameters.problemsService.set(kotlinToolingProblemsServiceProvider)
-    }
+    get() = gradle.registerClassLoaderScopedBuildService(KotlinToolingDiagnosticsCollector::class)
 
 internal val Project.kotlinToolingDiagnosticsCollector: KotlinToolingDiagnosticsCollector
     get() = kotlinToolingDiagnosticsCollectorProvider.get()
