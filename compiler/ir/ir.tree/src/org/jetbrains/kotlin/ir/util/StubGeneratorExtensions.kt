@@ -8,9 +8,11 @@ package org.jetbrains.kotlin.ir.util
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.PropertyDescriptor
+import org.jetbrains.kotlin.ir.IrBuiltIns
 import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.expressions.IrConstructorCall
 import org.jetbrains.kotlin.ir.irAttribute
+import org.jetbrains.kotlin.ir.linkage.IrProvider
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedContainerSource
 import org.jetbrains.kotlin.types.KotlinType
 
@@ -27,7 +29,9 @@ open class StubGeneratorExtensions {
     open fun generateFacadeClass(
         irFactory: IrFactory,
         deserializedSource: DeserializedContainerSource,
-        stubGenerator: DeclarationStubGenerator,
+        irBuiltIns: IrBuiltIns,
+        symbolTable: SymbolTable,
+        irProvider: IrProvider,
     ): IrClass? = null
 
 
@@ -52,8 +56,9 @@ open class StubGeneratorExtensions {
 
     open fun deserializeClass(
         irClass: IrClass,
-        stubGenerator: DeclarationStubGenerator,
-        parent: IrDeclarationParent,
+        irBuiltIns: IrBuiltIns,
+        symbolTable: SymbolTable,
+        irProvider: IrProvider,
     ): Boolean = false
 
     open val enhancedNullability: EnhancedNullability
