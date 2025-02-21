@@ -24,7 +24,10 @@ import org.jetbrains.kotlin.fir.resolve.calls.AbstractCallCandidate
 import org.jetbrains.kotlin.fir.resolve.calls.AbstractCandidate
 import org.jetbrains.kotlin.fir.resolve.calls.ResolutionDiagnostic
 import org.jetbrains.kotlin.fir.symbols.FirBasedSymbol
-import org.jetbrains.kotlin.fir.symbols.impl.*
+import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirClassLikeSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirRegularClassSymbol
+import org.jetbrains.kotlin.fir.symbols.impl.FirTypeParameterSymbol
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
 import org.jetbrains.kotlin.fir.types.FirQualifierPart
 import org.jetbrains.kotlin.fir.types.FirTypeRef
@@ -259,11 +262,6 @@ sealed class ConeContractDescriptionError : ConeDiagnostic {
     class NotReifiedTypeParameter(val symbol: FirTypeParameterSymbol) : ConeContractDescriptionError() {
         override val reason: String
             get() = "type parameter '${symbol.name}' is not reified"
-    }
-
-    object ErasedIsCheck : ConeContractDescriptionError() {
-        override val reason: String
-            get() = "instance check for erased type"
     }
 }
 

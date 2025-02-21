@@ -11,7 +11,8 @@ import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.analysis.checkers.*
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors
-import org.jetbrains.kotlin.fir.expressions.*
+import org.jetbrains.kotlin.fir.expressions.FirOperation
+import org.jetbrains.kotlin.fir.expressions.FirTypeOperatorCall
 import org.jetbrains.kotlin.fir.firPlatformSpecificCastChecker
 import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
 import org.jetbrains.kotlin.fir.types.*
@@ -79,7 +80,7 @@ object FirCastOperatorsChecker : FirTypeOperatorCallChecker(MppCheckerKind.Commo
                 oneIsNotNull -> impossible
                 else -> useless
             }
-            isCastErased(l.directType, r.directType, context) -> Applicability.CAST_ERASED
+            !context.isContractBody && isCastErased(l.directType, r.directType, context) -> Applicability.CAST_ERASED
             else -> Applicability.APPLICABLE
         }
     }

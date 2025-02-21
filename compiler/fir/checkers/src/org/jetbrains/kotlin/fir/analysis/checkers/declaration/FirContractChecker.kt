@@ -14,7 +14,6 @@ import org.jetbrains.kotlin.diagnostics.reportOn
 import org.jetbrains.kotlin.fir.FirElement
 import org.jetbrains.kotlin.fir.analysis.checkers.MppCheckerKind
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
-import org.jetbrains.kotlin.fir.analysis.checkers.isCastErased
 import org.jetbrains.kotlin.fir.analysis.diagnostics.FirErrors
 import org.jetbrains.kotlin.fir.contracts.*
 import org.jetbrains.kotlin.fir.contracts.description.*
@@ -27,12 +26,9 @@ import org.jetbrains.kotlin.fir.diagnostics.ConeContractMayNotHaveLabel
 import org.jetbrains.kotlin.fir.diagnostics.ConeDiagnostic
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.expressions.impl.FirContractCallBlock
-import org.jetbrains.kotlin.fir.resolve.diagnostics.ConeContractDescriptionError
 import org.jetbrains.kotlin.fir.types.ConeKotlinType
-import org.jetbrains.kotlin.fir.types.coneType
 import org.jetbrains.kotlin.fir.utils.exceptions.withFirEntry
 import org.jetbrains.kotlin.fir.visitors.FirVisitorVoid
-import org.jetbrains.kotlin.utils.addToStdlib.ifTrue
 import org.jetbrains.kotlin.utils.exceptions.errorWithAttachment
 
 object FirContractChecker : FirFunctionChecker(MppCheckerKind.Common) {
@@ -56,7 +52,7 @@ object FirContractChecker : FirFunctionChecker(MppCheckerKind.Common) {
 
         when (contractDescription) {
             is FirResolvedContractDescription -> {
-                checkUnresolvedEffects(contractDescription, declaration, context, reporter)
+                checkUnresolvedEffects(contractDescription, context, reporter)
                 checkDuplicateCallsInPlace(contractDescription, context, reporter)
                 if (contractDescription.effects.isEmpty() && contractDescription.unresolvedEffects.isEmpty()) {
                     reporter.reportOn(contractDescription.source, FirErrors.ERROR_IN_CONTRACT_DESCRIPTION, EMPTY_CONTRACT_MESSAGE, context)
@@ -100,28 +96,16 @@ object FirContractChecker : FirFunctionChecker(MppCheckerKind.Common) {
 
     private fun checkUnresolvedEffects(
         contractDescription: FirResolvedContractDescription,
-        declaration: FirFunction,
         context: CheckerContext,
         reporter: DiagnosticReporter
     ) {
-        val erasedCastChecker = ErasedCastChecker(declaration, context)
         // Any statements that [ConeEffectExtractor] cannot extract effects will be in `unresolvedEffects`.
         for (unresolvedEffect in contractDescription.unresolvedEffects) {
-            // We only check for erased casts if we cannot find an existing diagnostic, since they will sometimes be caught by the
-            // cone effect extractor already.
-            val diagnostic =
-                unresolvedEffect.effect.accept(DiagnosticExtractor, null)
-                    ?: unresolvedEffect.effect.accept(erasedCastChecker, null)
-                    ?: continue
+            val diagnostic = unresolvedEffect.effect.accept(DiagnosticExtractor, null) ?: continue
 
             // TODO, KT-59806: report on fine-grained locations, e.g., ... implies unresolved => report on unresolved, not the entire statement.
             //  but, sometimes, it's just reported on `contract`...
             reporter.reportOn(unresolvedEffect.source, FirErrors.ERROR_IN_CONTRACT_DESCRIPTION, diagnostic.reason, context)
-        }
-
-        for (resolvedEffect in contractDescription.effects) {
-            val diagnostic = resolvedEffect.effect.accept(erasedCastChecker, null) ?: continue
-            reporter.reportOn(resolvedEffect.source, FirErrors.ERROR_IN_CONTRACT_DESCRIPTION, diagnostic.reason, context)
         }
     }
 
@@ -246,52 +230,5 @@ object FirContractChecker : FirFunctionChecker(MppCheckerKind.Common) {
         override fun visitErroneousElement(element: KtErroneousContractElement<ConeKotlinType, ConeDiagnostic>, data: Nothing?): ConeDiagnostic {
             return element.diagnostic
         }
-    }
-
-    private class ErasedCastChecker(val declaration: FirFunction, val context: CheckerContext) :
-        KtContractDescriptionVisitor<ConeDiagnostic?, Nothing?, ConeKotlinType, ConeDiagnostic>() {
-        override fun visitContractDescriptionElement(
-            contractDescriptionElement: KtContractDescriptionElement<ConeKotlinType, ConeDiagnostic>,
-            data: Nothing?
-        ): ConeDiagnostic? {
-            return null
-        }
-
-        override fun visitConditionalEffectDeclaration(
-            conditionalEffect: KtConditionalEffectDeclaration<ConeKotlinType, ConeDiagnostic>,
-            data: Nothing?
-        ): ConeDiagnostic? {
-            return conditionalEffect.condition.accept(this, data)
-        }
-
-        override fun visitIsInstancePredicate(
-            isInstancePredicate: KtIsInstancePredicate<ConeKotlinType, ConeDiagnostic>,
-            data: Nothing?
-        ): ConeDiagnostic? {
-            val parameterType = getParameterType(isInstancePredicate.arg.parameterIndex)
-            return isCastErased(parameterType, isInstancePredicate.type, context).ifTrue {
-                ConeContractDescriptionError.ErasedIsCheck
-            }
-        }
-
-        override fun visitLogicalBinaryOperationContractExpression(
-            binaryLogicExpression: KtBinaryLogicExpression<ConeKotlinType, ConeDiagnostic>,
-            data: Nothing?
-        ): ConeDiagnostic? {
-            return binaryLogicExpression.left.accept(this, data) ?: binaryLogicExpression.right.accept(this, data)
-        }
-
-        override fun visitLogicalNot(logicalNot: KtLogicalNot<ConeKotlinType, ConeDiagnostic>, data: Nothing?): ConeDiagnostic? {
-            return logicalNot.arg.accept(this, data)
-        }
-
-        private fun getParameterType(index: Int): ConeKotlinType =
-            when (index) {
-                -1 -> declaration.symbol.resolvedReceiverTypeRef?.coneType
-                    ?: declaration.symbol.dispatchReceiverType
-                    ?: error("Contract references non-existent receiver")
-                in declaration.valueParameters.indices -> declaration.valueParameters[index].returnTypeRef.coneType
-                else -> declaration.contextParameters[index - declaration.valueParameters.size].returnTypeRef.coneType
-            }
     }
 }

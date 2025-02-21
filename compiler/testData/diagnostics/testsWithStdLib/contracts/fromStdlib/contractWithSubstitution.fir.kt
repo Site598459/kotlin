@@ -13,13 +13,13 @@ abstract class Base<T> {
 
     @OptIn(ExperimentalContracts::class)
     fun checkIsT(s: Any?): Boolean {
-        contract { <!ERROR_IN_CONTRACT_DESCRIPTION!>returns(true) implies (s is <!CANNOT_CHECK_FOR_ERASED!>T<!>)<!> }
+        contract { <!ERROR_IN_CONTRACT_DESCRIPTION!>returns(true) implies (s is T)<!> }
         return false
     }
 
     @OptIn(ExperimentalContracts::class)
     fun <R> checkIsOwnerR(s: Any?): Boolean {
-        contract { <!ERROR_IN_CONTRACT_DESCRIPTION!>returns(true) implies (s is <!CANNOT_CHECK_FOR_ERASED!>R<!>)<!> }
+        contract { returns(true) implies (s is R) }
         return false
     }
 
@@ -49,7 +49,7 @@ class Derived: Base<String>() {
 
     fun test_2(s: Any) {
         if (checkIsOwnerR<String>(s)) {
-            s.<!UNRESOLVED_REFERENCE!>length<!>
+            s.length
         }
     }
 
@@ -73,7 +73,7 @@ fun test_2(d: Derived, s: Any?) {
 
 fun test_3(d: Derived, s: Any?) {
     if (d.checkIsOwnerR<String>(s)) {
-        s.<!UNRESOLVED_REFERENCE!>length<!>
+        s.length
     }
 }
 

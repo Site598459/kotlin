@@ -14,14 +14,14 @@ inline fun <reified T> referToReifiedGeneric(x: Any?) {
 class Generic<T> {
     fun referToCaptured(x: Any?) {
         contract {
-            <!ERROR_IN_CONTRACT_DESCRIPTION!>returns() implies (x is <!CANNOT_CHECK_FOR_ERASED!>T<!>)<!>
+            <!ERROR_IN_CONTRACT_DESCRIPTION!>returns() implies (x is T)<!>
         }
     }
 }
 
 fun referToSubstituted(x: Any?) {
     contract {
-        <!ERROR_IN_CONTRACT_DESCRIPTION!>returns() implies (x is <!CANNOT_CHECK_FOR_ERASED!>Generic<String><!>)<!>
+        returns() implies (x is Generic<String>)
     }
 }
 
@@ -37,13 +37,13 @@ typealias SimpleType = Int
 
 fun referToAliasedGeneric(x: Any?) {
     contract {
-        <!ERROR_IN_CONTRACT_DESCRIPTION!>returns() implies (x is <!CANNOT_CHECK_FOR_ERASED!>GenericString<!>)<!>
+        returns() implies (x is GenericString)
     }
 }
 
 fun referToAliasedFunctionType(x: Any?) {
     contract {
-        <!ERROR_IN_CONTRACT_DESCRIPTION!>returns() implies (x is <!CANNOT_CHECK_FOR_ERASED!>FunctionalType<!>)<!>
+        returns() implies (x is FunctionalType)
     }
 }
 
