@@ -45,7 +45,7 @@ abstract class DeclarationStubGenerator(
     val irBuiltIns: IrBuiltIns,
     val extensions: StubGeneratorExtensions = StubGeneratorExtensions.EMPTY,
 ) : IrProvider {
-    protected val lazyTable = symbolTable.lazyWrapper
+    protected val lazyTable = IrLazySymbolTable(symbolTable)
 
     val lock: IrLock
         get() = symbolTable.lock
@@ -53,7 +53,7 @@ abstract class DeclarationStubGenerator(
     var unboundSymbolGeneration: Boolean
         get() = lazyTable.stubGenerator != null
         set(value) {
-            lazyTable.stubGenerator = if (value) this else null
+            symbolTable.irProvider = if (value) this else null
         }
 
     abstract val typeTranslator: TypeTranslator
