@@ -62,7 +62,6 @@ class JsContinuousBuildIT : KGPDaemonsBaseTest() {
                 }
 
                 // wait before file modification, to give Gradle a chance to catch up with file events
-                // (not sure if this is necessary... this test is flaky af)
                 Thread.sleep(5000)
 
                 // modify a file to trigger a re-build
