@@ -65,7 +65,7 @@ suspend fun suspendTopLevel(x: Boolean) {
 
 // Top-level operator
 operator fun Boolean.plus(x: Boolean): Boolean {
-    <!CONTRACT_NOT_ALLOWED!>contract<!> { returns() implies (x) }
+    contract { returns() implies (x) }
     return x
 }
 
