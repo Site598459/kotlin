@@ -75,6 +75,7 @@ KaValueParameterSymbol:
     isExtension: false
     isExternal: false
     isFromPrimaryConstructor: true
+    isInline: false
     isLateInit: false
     isOverride: true
     isStatic: false

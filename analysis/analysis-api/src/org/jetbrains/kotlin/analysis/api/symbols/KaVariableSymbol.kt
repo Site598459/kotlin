@@ -296,6 +296,11 @@ public abstract class KaKotlinPropertySymbol : KaPropertySymbol(), KaContextPara
      */
     public abstract val isConst: Boolean
 
+    /**
+     * Whether the property is an [inline property](https://kotlinlang.org/docs/inline-functions.html#inline-properties).
+     */
+    public abstract val isInline: Boolean
+
     abstract override fun createPointer(): KaSymbolPointer<KaKotlinPropertySymbol>
 }
 

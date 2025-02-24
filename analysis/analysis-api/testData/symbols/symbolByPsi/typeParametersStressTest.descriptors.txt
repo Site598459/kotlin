@@ -185,6 +185,7 @@ KaKotlinPropertySymbol:
   isExtension: true
   isExternal: false
   isFromPrimaryConstructor: false
+  isInline: false
   isLateInit: false
   isOverride: false
   isStatic: false

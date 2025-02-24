@@ -1,0 +1,3 @@
+var property: kotlin.Int
+  get()
+  set(value: kotlin.Int)

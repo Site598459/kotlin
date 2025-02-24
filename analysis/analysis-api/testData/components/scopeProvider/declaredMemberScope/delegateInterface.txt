@@ -70,6 +70,7 @@ KaKotlinPropertySymbol:
   isExtension: false
   isExternal: false
   isFromPrimaryConstructor: true
+  isInline: false
   isLateInit: false
   isOverride: false
   isStatic: false
@@ -197,6 +198,7 @@ KaConstructorSymbol:
         isExtension: false
         isExternal: false
         isFromPrimaryConstructor: true
+        isInline: false
         isLateInit: false
         isOverride: false
         isStatic: false

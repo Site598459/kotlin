@@ -20,6 +20,7 @@ import org.jetbrains.kotlin.analysis.api.types.KaType
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.Visibility
 import org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl
+import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.CallableId
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtParameter
@@ -50,6 +51,9 @@ internal class KaFe10DescKotlinPropertySymbol(
 
     override val isConst: Boolean
         get() = withValidityAssertion { descriptor.isConst }
+
+    override val isInline: Boolean
+        get() = withValidityAssertion { (psi as? KtProperty)?.hasModifier(KtTokens.INLINE_KEYWORD) == true }
 
     override val isVal: Boolean
         get() = withValidityAssertion { !descriptor.isVar }

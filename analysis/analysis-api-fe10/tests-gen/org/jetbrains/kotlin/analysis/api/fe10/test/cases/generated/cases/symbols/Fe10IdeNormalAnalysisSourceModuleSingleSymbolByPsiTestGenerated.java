@@ -143,6 +143,12 @@ public class Fe10IdeNormalAnalysisSourceModuleSingleSymbolByPsiTestGenerated ext
   }
 
   @Test
+  @TestMetadata("inlinePropertyInClass.kt")
+  public void testInlinePropertyInClass() {
+    runTest("analysis/analysis-api/testData/symbols/singleSymbolByPsi/inlinePropertyInClass.kt");
+  }
+
+  @Test
   @TestMetadata("innerTypeAlias.kt")
   public void testInnerTypeAlias() {
     runTest("analysis/analysis-api/testData/symbols/singleSymbolByPsi/innerTypeAlias.kt");
@@ -701,6 +707,12 @@ public class Fe10IdeNormalAnalysisSourceModuleSingleSymbolByPsiTestGenerated ext
     @TestMetadata("initWithAnnotations.kt")
     public void testInitWithAnnotations() {
       runTest("analysis/analysis-api/testData/symbols/singleSymbolByPsi/errors/initWithAnnotations.kt");
+    }
+
+    @Test
+    @TestMetadata("inlinePropertyWithBackingField.kt")
+    public void testInlinePropertyWithBackingField() {
+      runTest("analysis/analysis-api/testData/symbols/singleSymbolByPsi/errors/inlinePropertyWithBackingField.kt");
     }
 
     @Test

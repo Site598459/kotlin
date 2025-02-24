@@ -47,6 +47,9 @@ internal class KaFe10PsiKotlinPropertySymbol(
     override val isConst: Boolean
         get() = withValidityAssertion { psi.hasModifier(KtTokens.CONST_KEYWORD) }
 
+    override val isInline: Boolean
+        get() = withValidityAssertion { psi.hasModifier(KtTokens.INLINE_KEYWORD) }
+
     override val hasGetter: Boolean
         get() = withValidityAssertion { true }
 

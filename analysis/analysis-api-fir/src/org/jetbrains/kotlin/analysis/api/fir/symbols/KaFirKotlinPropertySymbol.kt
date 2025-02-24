@@ -66,8 +66,10 @@ internal sealed class KaFirKotlinPropertySymbol<P : KtCallableDeclaration>(
     override val isExtension: Boolean
         get() = withValidityAssertion { backingPsi?.isExtensionDeclaration() ?: firSymbol.isExtension }
 
-    val isInline: Boolean
-        get() = withValidityAssertion { backingPsi?.hasModifier(KtTokens.INLINE_KEYWORD) ?: firSymbol.isInline }
+    override val isInline: Boolean
+        get() = withValidityAssertion {
+            (psi as? KtProperty)?.hasModifier(KtTokens.INLINE_KEYWORD) ?: firSymbol.isInline
+        }
 
     override val annotations: KaAnnotationList
         get() = withValidityAssertion { psiOrSymbolAnnotationList() }

@@ -494,6 +494,7 @@ scopes:
         isExtension: false
         isExternal: false
         isFromPrimaryConstructor: false
+        isInline: false
         isLateInit: false
         isOverride: false
         isStatic: false
@@ -4509,6 +4510,7 @@ scopes:
         isExtension: true
         isExternal: false
         isFromPrimaryConstructor: false
+        isInline: false
         isLateInit: false
         isOverride: false
         isStatic: false

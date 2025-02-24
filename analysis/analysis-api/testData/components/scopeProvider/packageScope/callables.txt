@@ -66,6 +66,7 @@ KaKotlinPropertySymbol:
   isExtension: false
   isExternal: false
   isFromPrimaryConstructor: false
+  isInline: false
   isLateInit: false
   isOverride: false
   isStatic: false
@@ -159,6 +160,7 @@ KaKotlinPropertySymbol:
   isExtension: false
   isExternal: false
   isFromPrimaryConstructor: false
+  isInline: false
   isLateInit: false
   isOverride: false
   isStatic: false
@@ -252,6 +254,7 @@ KaKotlinPropertySymbol:
   isExtension: false
   isExternal: false
   isFromPrimaryConstructor: false
+  isInline: false
   isLateInit: false
   isOverride: false
   isStatic: false
@@ -345,6 +348,7 @@ KaKotlinPropertySymbol:
   isExtension: false
   isExternal: false
   isFromPrimaryConstructor: false
+  isInline: false
   isLateInit: false
   isOverride: false
   isStatic: false
@@ -438,6 +442,7 @@ KaKotlinPropertySymbol:
   isExtension: false
   isExternal: false
   isFromPrimaryConstructor: false
+  isInline: false
   isLateInit: false
   isOverride: false
   isStatic: false
@@ -531,6 +536,7 @@ KaKotlinPropertySymbol:
   isExtension: false
   isExternal: false
   isFromPrimaryConstructor: false
+  isInline: false
   isLateInit: false
   isOverride: false
   isStatic: false

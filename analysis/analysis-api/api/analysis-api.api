@@ -941,6 +941,7 @@ public abstract class org/jetbrains/kotlin/analysis/api/symbols/KaKotlinProperty
 	public fun <init> ()V
 	public abstract fun createPointer ()Lorg/jetbrains/kotlin/analysis/api/symbols/pointers/KaSymbolPointer;
 	public abstract fun isConst ()Z
+	public abstract fun isInline ()Z
 	public abstract fun isLateInit ()Z
 }
 

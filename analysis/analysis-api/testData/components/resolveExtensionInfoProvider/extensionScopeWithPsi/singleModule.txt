@@ -242,6 +242,7 @@ callables: 5
     isExtension: false
     isExternal: false
     isFromPrimaryConstructor: false
+    isInline: false
     isLateInit: false
     isOverride: false
     isStatic: false
@@ -322,6 +323,7 @@ callables: 5
     isExtension: false
     isExternal: false
     isFromPrimaryConstructor: false
+    isInline: false
     isLateInit: false
     isOverride: false
     isStatic: false
@@ -494,6 +496,7 @@ callables: 5
     isExtension: true
     isExternal: false
     isFromPrimaryConstructor: false
+    isInline: false
     isLateInit: false
     isOverride: false
     isStatic: false
