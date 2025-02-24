@@ -177,10 +177,12 @@ fun Project.projectTest(
 
         muteWithDatabase()
         if (jUnitMode == JUnitMode.JUnit4) {
-            jvmArgs(
-                "-javaagent:${classpath.find { it.name.contains("junit-foundation") }?.absolutePath ?:
-                error("junit-foundation not found in ${classpath.joinToString("\n")}")}"
-            )
+            jvmArgumentProviders.add {
+                listOf(
+                    "-javaagent:${classpath.find { it.name.contains("junit-foundation") }?.absolutePath ?:
+                    error("junit-foundation not found in ${classpath.joinToString("\n")}")}"
+                )
+            }
         }
 
         doFirst {
