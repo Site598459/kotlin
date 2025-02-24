@@ -23,18 +23,18 @@ internal fun execWithProgress(
         this.progress(description)
 
         val stdout = StringBuilder()
-        val stdInPipe = PipedInputStream()
-        val stdOutPipe = PipedOutputStream(stdInPipe)
+        val stdoutInputPipe = PipedInputStream()
+        val stdoutOutputPipe = PipedOutputStream(stdoutInputPipe)
 
         val outputReaderThread = createOutputReaderThread(
             description = description,
             stdout = stdout,
-            stdInPipe = stdInPipe,
+            stdoutInputPipe = stdoutInputPipe,
             logger = this,
         )
 
         val result = execOps.exec { exec ->
-            exec.standardOutput = stdOutPipe
+            exec.standardOutput = stdoutOutputPipe
             exec.isIgnoreExitValue = true
             configureExec(exec)
         }
@@ -75,14 +75,14 @@ internal fun execWithProgress(
 private fun createOutputReaderThread(
     description: String,
     stdout: StringBuilder,
-    stdInPipe: PipedInputStream,
+    stdoutInputPipe: PipedInputStream,
     logger: ProgressLogger,
 ): Thread =
     thread(
         name = "output reader for [$description]",
         isDaemon = true,
     ) {
-        stdInPipe.reader().use { reader ->
+        stdoutInputPipe.reader().use { reader ->
             val buffer = StringBuilder()
             while (true) {
                 val read = reader.read()
