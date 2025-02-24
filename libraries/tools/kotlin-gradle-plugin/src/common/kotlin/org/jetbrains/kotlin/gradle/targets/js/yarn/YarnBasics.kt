@@ -56,8 +56,8 @@ abstract class YarnBasics internal constructor(
         args: List<String>,
     ) {
         val services = objects.newInstance(Services::class.java)
-        val progLog = services.progressLoggerFactory.newBuildOpLogger()
-        execWithProgress(progLog, description, execOps) { exec ->
+        val progressLogger = services.progressLoggerFactory.newBuildOpLogger()
+        execWithProgress(progressLogger, description, execOps) { exec ->
             val arguments = mutableListOf<String>().apply {
                 addAll(args)
                 if (logger.isDebugEnabled) add("--verbose")
