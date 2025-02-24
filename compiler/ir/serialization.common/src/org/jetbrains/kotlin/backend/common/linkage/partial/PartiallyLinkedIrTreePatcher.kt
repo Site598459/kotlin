@@ -14,11 +14,15 @@ import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.ir.IrBuiltIns
 import org.jetbrains.kotlin.ir.IrElement
 import org.jetbrains.kotlin.ir.IrStatement
+import org.jetbrains.kotlin.ir.UNDEFINED_OFFSET
 import org.jetbrains.kotlin.ir.declarations.*
+import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin.Companion.DEFAULT_PROPERTY_ACCESSOR
 import org.jetbrains.kotlin.ir.declarations.lazy.IrLazyDeclarationBase
 import org.jetbrains.kotlin.ir.expressions.*
 import org.jetbrains.kotlin.ir.expressions.IrStatementOrigin.Companion.PARTIAL_LINKAGE_RUNTIME_ERROR
+import org.jetbrains.kotlin.ir.expressions.impl.IrCallImpl
 import org.jetbrains.kotlin.ir.expressions.impl.IrCompositeImpl
+import org.jetbrains.kotlin.ir.expressions.impl.fromSymbolOwner
 import org.jetbrains.kotlin.ir.linkage.partial.*
 import org.jetbrains.kotlin.ir.linkage.partial.PartialLinkageCase.*
 import org.jetbrains.kotlin.ir.overrides.isEffectivelyPrivate
@@ -580,7 +584,7 @@ internal class PartiallyLinkedIrTreePatcher(
             transformer = this@ExpressionTransformer,
             doNotLogWhen = doNotLogWhen,
             computePartialLinkageCase = {
-                computePartialLinkageCase() ?: checkExpressionType(type) // Check something that is always present in every expression.
+                computePartialLinkageCase() ?: checkExpressionType(type) // Check something that is always present in every expression. //TODO checkExpressionType(type)
             },
         ).also { onAfterMaybeThrowLinkageError() }
 
@@ -1145,6 +1149,32 @@ internal class PartiallyLinkedIrTreePatcher(
         }
     }
 
+    val STABLE_FIELD_MARKER = $$"$stable"
+    val STABILITY_PROPERTY_MARKER = $$"$stableprop"
+    val STABILITY_GETTER_MARKER = $$"$stableprop_getter"
+
+    fun IrGetField.isStableFieldAccess(): Boolean {
+        return symbol.owner.name.asString().endsWith(STABLE_FIELD_MARKER)
+    }
+
+    fun IrSimpleFunction.isStabilityGetter(): Boolean {
+        return name.asString().endsWith(STABILITY_GETTER_MARKER)
+    }
+
+    fun IrSimpleFunction.isStablePropertyGetter(): Boolean {
+        if (origin == DEFAULT_PROPERTY_ACCESSOR) {
+            return correspondingPropertySymbol?.let { it.owner.name.asString().endsWith(STABILITY_PROPERTY_MARKER) } == true
+        }
+        return false
+    }
+
+    fun IrFieldSymbol.findSuitableStabilityGetter(): IrSimpleFunction? {
+        val getterFunName = owner.name.asString().removeSuffix(STABLE_FIELD_MARKER) + STABILITY_GETTER_MARKER
+        return (owner.parent as? IrDeclarationContainer)?.let { container ->
+            container.declarations.filterIsInstance<IrSimpleFunction>().find { it.name.asString() == getterFunName }
+        }
+    }
+
     private inline fun <T : IrExpression> T.maybeThrowLinkageError(
         transformer: FileAwareIrElementTransformerVoid,
         computePartialLinkageCase: T.() -> PartialLinkageCase?,
@@ -1158,6 +1188,17 @@ internal class PartiallyLinkedIrTreePatcher(
 
         val partialLinkageCase = computePartialLinkageCase()
             ?: return apply { (this as? IrContainerExpression)?.statements?.eliminateDeadCodeStatements() }
+
+        if (partialLinkageCase is ExpressionHasInaccessibleDeclaration && partialLinkageCase.expression is IrGetField && (partialLinkageCase.expression as IrGetField).isStableFieldAccess()) {
+            (partialLinkageCase.expression as IrGetField).symbol.findSuitableStabilityGetter()?.let {
+                return IrCallImpl.fromSymbolOwner(
+                    UNDEFINED_OFFSET,
+                    UNDEFINED_OFFSET,
+                    partialLinkageCase.expression.type,
+                    it.symbol
+                )
+            }
+        }
 
         // Collect direct children if `this` isn't an expression with branches.
         val directChildren = if (!hasBranches())
