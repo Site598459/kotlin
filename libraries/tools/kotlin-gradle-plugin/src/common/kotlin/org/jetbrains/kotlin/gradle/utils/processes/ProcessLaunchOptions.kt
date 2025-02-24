@@ -26,9 +26,19 @@ interface ProcessLaunchOptions {
     /** The working directory for the process. */
     val workingDir: DirectoryProperty
 
-    /** The environment variable to use for the process. */
+    /**
+     * The environment variables to use when launching the process.
+     *
+     * Note that the processes may be launched using
+     * [org.gradle.process.ExecOperations].
+     * If so, then when no environment variables are provided then
+     * [org.gradle.process.ExecOperations]
+     * will copy all values from [System.getenv].
+     * Otherwise, if _any_ environment variables are set, then _no_ values from
+     * [System.getenv] be used.
+     * This may result in the `PATH` environment variable being unset.
+     */
     val environment: MapProperty<String, String>
-
 
     companion object {
         /**
@@ -40,7 +50,6 @@ interface ProcessLaunchOptions {
             newInstance<ProcessLaunchOptions>()
                 .apply {
                     workingDir.convention(directoryProperty().fileValue(File(".")))
-                    environment.convention(System.getenv())
                     block()
                 }
     }
