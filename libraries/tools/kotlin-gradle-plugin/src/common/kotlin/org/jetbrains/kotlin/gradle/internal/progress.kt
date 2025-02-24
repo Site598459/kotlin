@@ -7,19 +7,21 @@ package org.jetbrains.kotlin.gradle.internal
 
 import org.gradle.internal.logging.events.ProgressStartEvent
 import org.gradle.internal.logging.progress.ProgressLogger
-import org.gradle.internal.service.ServiceRegistry
+import org.gradle.internal.logging.progress.ProgressLoggerFactory
 
-fun <T> ServiceRegistry.operation(
+
+internal fun ProgressLoggerFactory.newBuildOpLogger(): ProgressLogger =
+    newOperation(ProgressStartEvent.BUILD_OP_CATEGORY)
+
+internal fun <T> ProgressLogger.operation(
     description: String,
     initialStatus: String? = null,
-    body: ProgressLogger.() -> T
+    body: ProgressLogger.() -> T,
 ): T {
-    val progressFactory = get(org.gradle.internal.logging.progress.ProgressLoggerFactory::class.java)
-    val operation = progressFactory.newOperation(ProgressStartEvent.BUILD_OP_CATEGORY)
-    operation.start(description, initialStatus)
+    start(description, initialStatus)
     try {
-        return operation.body()
+        return body(this)
     } finally {
-        operation.completed()
+        completed()
     }
 }
