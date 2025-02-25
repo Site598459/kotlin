@@ -55,8 +55,7 @@ abstract class YarnBasics internal constructor(
         description: String,
         args: List<String>,
     ) {
-        val services = objects.newInstance(Services::class.java)
-        val progressLogger = services.progressLoggerFactory.newBuildOpLogger()
+        val progressLogger = objects.newBuildOpLogger()
         execWithProgress(progressLogger, description, execOps) { exec ->
             val arguments = mutableListOf<String>().apply {
                 addAll(args)
@@ -81,10 +80,5 @@ abstract class YarnBasics internal constructor(
 
             exec.workingDir = dir
         }
-    }
-
-    internal interface Services {
-        @get:Inject
-        val progressLoggerFactory: ProgressLoggerFactory
     }
 }

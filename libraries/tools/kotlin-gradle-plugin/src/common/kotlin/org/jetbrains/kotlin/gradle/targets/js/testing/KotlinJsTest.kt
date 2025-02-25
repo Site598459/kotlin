@@ -137,7 +137,7 @@ constructor(
     fun useKarma() = useKarma {}
     fun useKarma(body: KotlinKarma.() -> Unit): KotlinKarma =
         use(
-            KotlinKarma(compilation, { services }, path, objects, providers),
+            KotlinKarma(compilation, path, objects, providers),
             body
         )
 

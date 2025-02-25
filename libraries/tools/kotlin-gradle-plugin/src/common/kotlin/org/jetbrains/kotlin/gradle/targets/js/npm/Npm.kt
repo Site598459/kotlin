@@ -8,7 +8,6 @@ package org.jetbrains.kotlin.gradle.targets.js.npm
 import org.gradle.api.logging.Logger
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Provider
-import org.gradle.internal.logging.progress.ProgressLoggerFactory
 import org.gradle.internal.service.ServiceRegistry
 import org.gradle.process.ExecOperations
 import org.jetbrains.kotlin.gradle.internal.execWithProgress
@@ -16,7 +15,6 @@ import org.jetbrains.kotlin.gradle.internal.newBuildOpLogger
 import org.jetbrains.kotlin.gradle.targets.js.npm.resolved.PreparedKotlinCompilationNpmResolution
 import org.jetbrains.kotlin.gradle.utils.getFile
 import java.io.File
-import javax.inject.Inject
 
 class Npm internal constructor(
     private val execOps: ExecOperations,
@@ -117,8 +115,7 @@ class Npm internal constructor(
         description: String,
         args: List<String>,
     ) {
-        val services = objects.newInstance(Services::class.java)
-        val progressLogger = services.progressLoggerFactory.newBuildOpLogger()
+        val progressLogger = objects.newBuildOpLogger()
         execWithProgress(progressLogger, description, execOps = execOps) { execSpec ->
             val arguments: List<String> = mutableListOf<String>().apply {
                 add("install")
@@ -162,10 +159,5 @@ class Npm internal constructor(
         rootPackageJson.saveTo(
             rootPackageJsonFile
         )
-    }
-
-    internal interface Services {
-        @get:Inject
-        val progressLoggerFactory: ProgressLoggerFactory
     }
 }

@@ -7,9 +7,9 @@ package org.jetbrains.kotlin.gradle.targets.js.typescript
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
-import org.gradle.internal.logging.progress.ProgressLoggerFactory
 import org.gradle.process.ExecOperations
 import org.gradle.work.DisableCachingByDefault
 import org.gradle.work.NormalizeLineEndings
@@ -33,7 +33,7 @@ constructor(
     @Transient
     final override val compilation: KotlinJsIrCompilation,
     private val execOps: ExecOperations,
-    private val progressLoggerFactory: ProgressLoggerFactory,
+    private val objects: ObjectFactory,
 ) : DefaultTask(), RequiresNpmDependencies {
     private val npmProject = compilation.npmProject
 
@@ -66,7 +66,7 @@ constructor(
 
         if (files.isEmpty()) return
 
-        val progressLogger = progressLoggerFactory.newBuildOpLogger()
+        val progressLogger = objects.newBuildOpLogger()
         val result = execWithProgress(progressLogger, "typescript", execOps) {
             npmProject.useTool(it, "typescript/bin/tsc", listOf(), listOf("--noEmit"))
         }

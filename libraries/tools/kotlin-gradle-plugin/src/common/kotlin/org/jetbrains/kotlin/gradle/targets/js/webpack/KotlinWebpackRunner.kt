@@ -8,7 +8,6 @@ package org.jetbrains.kotlin.gradle.targets.js.webpack
 import org.gradle.api.logging.Logger
 import org.gradle.api.model.ObjectFactory
 import org.gradle.internal.logging.progress.ProgressLogger
-import org.gradle.internal.logging.progress.ProgressLoggerFactory
 import org.gradle.process.ExecOperations
 import org.gradle.process.ExecResult
 import org.gradle.process.ExecSpec
@@ -32,11 +31,10 @@ internal data class KotlinWebpackRunner(
     val config: KotlinWebpackConfig,
     private val objects: ObjectFactory,
     private val execOps: ExecOperations,
-    private val progressLoggerFactory: ProgressLoggerFactory,
 ) {
 
     fun execute(): ExecResult {
-        val progressLogger = progressLoggerFactory.newBuildOpLogger()
+        val progressLogger = objects.newBuildOpLogger()
         val (standardClient, errorClient) = createTeamCityClients(progressLogger)
 
         return execWithErrorLogger(

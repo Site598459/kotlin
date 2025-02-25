@@ -21,7 +21,6 @@ import org.gradle.api.tasks.*
 import org.gradle.deployment.internal.Deployment
 import org.gradle.deployment.internal.DeploymentHandle
 import org.gradle.deployment.internal.DeploymentRegistry
-import org.gradle.internal.logging.progress.ProgressLoggerFactory
 import org.gradle.process.ExecOperations
 import org.gradle.work.NormalizeLineEndings
 import org.jetbrains.kotlin.build.report.metrics.BuildMetricsReporter
@@ -55,7 +54,6 @@ constructor(
     final override val compilation: KotlinJsIrCompilation,
     private val objects: ObjectFactory,
     private val execOps: ExecOperations,
-    private val progressLoggerFactory: ProgressLoggerFactory,
 ) : DefaultTask(), RequiresNpmDependencies, WebpackRulesDsl, UsesBuildMetricsService {
     @get:Internal
     internal abstract val versions: Property<NpmVersions>
@@ -303,7 +301,6 @@ constructor(
             config = config,
             objects = objects,
             execOps = execOps,
-            progressLoggerFactory = progressLoggerFactory,
         )
     }
 
