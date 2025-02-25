@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.util
 
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 /**
@@ -129,7 +130,7 @@ fun UnitStats.forEachStringMeasurement(action: (String) -> Unit) {
         action(
             "%20s%8s ms".format(name, time.millis) +
                     if (phaseType != PhaseType.Initialization && linesCount != 0) {
-                        "%12.3f loc/s".format(getLinesPerSecond(time))
+                        "%12.3f loc/s".format(Locale.ENGLISH, getLinesPerSecond(time))
                     } else {
                         ""
                     }
