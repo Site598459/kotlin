@@ -275,22 +275,6 @@ fun main() {
             }
         }
 
-        // Atomicfu compiler plugin native tests.
-        testGroup("plugins/atomicfu/atomicfu-compiler/test", "plugins/atomicfu/atomicfu-compiler/testData/box") {
-            testClass<AbstractNativeCodegenBoxTest>(
-                suiteTestClassName = "AtomicfuNativeTestGenerated",
-                annotations = listOf(*atomicfuNative(), *frontendClassic(), provider<UseExtTestCaseGroupProvider>())
-            ) {
-                model(targetBackend = TargetBackend.NATIVE)
-            }
-            testClass<AbstractNativeCodegenBoxTest>(
-                suiteTestClassName = "AtomicfuNativeFirTestGenerated",
-                annotations = listOf(*atomicfuNative(), *frontendFir(), provider<UseExtTestCaseGroupProvider>())
-            ) {
-                model(targetBackend = TargetBackend.NATIVE)
-            }
-        }
-
         // LitmusKt tests.
         testGroup("native/native.tests/litmus-tests/tests-gen", "native/native.tests/litmus-tests/testData") {
             testClass<AbstractNativeBlackBoxTest>(
@@ -577,10 +561,6 @@ fun frontendClassic() = arrayOf(
 
 private fun debugger() = annotation(Tag::class.java, "debugger")
 private fun infrastructure() = annotation(Tag::class.java, "infrastructure")
-private fun atomicfuNative() = arrayOf(
-    annotation(Tag::class.java, "atomicfu-native"),
-    annotation(EnforcedHostTarget::class.java), // TODO(KT-65977): Make atomicfu tests run on all targets.
-)
 private fun litmusktNative() = annotation(Tag::class.java, "litmuskt-native")
 private fun standalone() = arrayOf(
     annotation(Tag::class.java, "standalone"),
