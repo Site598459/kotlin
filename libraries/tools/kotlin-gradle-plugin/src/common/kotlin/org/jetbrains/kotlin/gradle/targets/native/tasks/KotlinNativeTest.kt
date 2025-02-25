@@ -23,6 +23,7 @@ import org.jetbrains.kotlin.gradle.internal.testing.TCServiceMessagesTestExecuti
 import org.jetbrains.kotlin.gradle.targets.native.internal.NativeAppleSimulatorTCServiceMessagesTestExecutionSpec
 import org.jetbrains.kotlin.gradle.targets.native.internal.parseKotlinNativeStackTraceAsJvm
 import org.jetbrains.kotlin.gradle.tasks.KotlinTest
+import org.jetbrains.kotlin.gradle.utils.SystemGetEnvSource.Companion.getAllEnvironmentVariables
 import org.jetbrains.kotlin.gradle.utils.processes.ProcessLaunchOptions
 import org.jetbrains.kotlin.gradle.utils.processes.ProcessLaunchOptions.Companion.processLaunchOptions
 import java.io.File
@@ -38,7 +39,9 @@ constructor(
     private val providers: ProviderFactory,
 ) : KotlinTest(execOps) {
 
-    private val processOptions: ProcessLaunchOptions = objects.processLaunchOptions()
+    private val processOptions: ProcessLaunchOptions = objects.processLaunchOptions {
+        environment.putAll(providers.getAllEnvironmentVariables())
+    }
 
     @get:Internal
     val executableProperty: Property<FileCollection> = objects.property(FileCollection::class.java)
