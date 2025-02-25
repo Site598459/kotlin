@@ -16,9 +16,8 @@ import org.jetbrains.kotlin.gradle.util.assertContains
 import org.jetbrains.kotlin.gradle.utils.processes.ExecAsyncHandle.Companion.execAsync
 import org.jetbrains.kotlin.util.assertDoesNotThrow
 import org.jetbrains.kotlin.util.assertThrows
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.PipedInputStream
-import java.io.PipedOutputStream
 import java.nio.file.FileSystems
 import kotlin.system.exitProcess
 import kotlin.test.*
@@ -83,26 +82,18 @@ class ExecAsyncHandleTest {
 
     @Test
     fun `when setting stdin in ExecAsync, expect process receives input`() {
-        val inputForProcess = PipedOutputStream()
         val processStdout = ByteArrayOutputStream()
-
-        val handle = buildTestHandle {
-            args("logStdin")
-            standardOutput = processStdout
-            standardInput = PipedInputStream(inputForProcess)
-        }
+        val stdinForProcess = ByteArrayInputStream("Blah blah stdin content".toByteArray())
 
         try {
+            val handle = buildTestHandle {
+                args("logStdin")
+                standardOutput = processStdout
+                standardInput = stdinForProcess
+            }
+
             handle.start()
 
-            inputForProcess.bufferedWriter().apply {
-                appendLine("Blah blah stdin content")
-                flush()
-            }
-            inputForProcess.flush()
-            inputForProcess.close()
-
-            // Wait for process to finish reading and processing input
             handle.waitForResult()
 
             assertEquals(
@@ -112,7 +103,7 @@ class ExecAsyncHandleTest {
 
         } finally {
             processStdout.close()
-            inputForProcess.close()
+            stdinForProcess.close()
         }
     }
 
