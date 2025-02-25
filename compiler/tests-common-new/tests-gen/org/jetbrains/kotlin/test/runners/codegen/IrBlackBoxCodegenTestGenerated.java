@@ -53612,6 +53612,12 @@ public class IrBlackBoxCodegenTestGenerated extends AbstractIrBlackBoxCodegenTes
         }
 
         @Test
+        @TestMetadata("annotations.kt")
+        public void testAnnotations() {
+          runTest("compiler/testData/codegen/box/reflection/properties/localDelegated/annotations.kt");
+        }
+
+        @Test
         @TestMetadata("defaultImpls.kt")
         public void testDefaultImpls() {
           runTest("compiler/testData/codegen/box/reflection/properties/localDelegated/defaultImpls.kt");
