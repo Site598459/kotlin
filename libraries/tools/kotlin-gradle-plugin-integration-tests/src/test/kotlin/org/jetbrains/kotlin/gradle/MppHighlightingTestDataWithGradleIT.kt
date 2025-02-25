@@ -7,7 +7,6 @@ package org.jetbrains.kotlin.gradle
 
 import org.gradle.util.GradleVersion
 import org.jetbrains.kotlin.gradle.testbase.*
-import org.jetbrains.kotlin.gradle.util.modify
 import org.jetbrains.kotlin.gradle.util.capitalize
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.extension.ExtensionContext
@@ -16,10 +15,10 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsSource
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.Path
 import java.util.stream.Stream
-import kotlin.io.path.appendText
+import kotlin.io.path.*
 import kotlin.streams.asStream
-import kotlin.streams.toList
 
 @DisplayName("Check Multiplatform IDE highlighting projects")
 @MppGradlePluginTests
@@ -29,24 +28,27 @@ internal class MppHighlightingTestDataWithGradleIT : KGPBaseTest() {
     fun runTest(
         gradleVersion: GradleVersion,
         cliCompiler: CliCompiler,
-        testDataDir: File,
-        sourceRoots: List<TestCaseSourceRoot>
+        testDataDir: Path,
+        sourceRoots: List<TestCaseSourceRoot>,
     ) {
         project("mpp-source-set-hierarchy-analysis", gradleVersion) {
             val expectedErrorsPerSourceSetName = sourceRoots.associate { sourceRoot ->
-                sourceRoot.kotlinSourceSetName to testDataDir.resolve(sourceRoot.directoryName).walkTopDown()
+                sourceRoot.kotlinSourceSetName to testDataDir.resolve(sourceRoot.directoryName).walk()
                     .filter { it.extension == "kt" }
-                    .map { CodeWithErrorInfo.parse(it.readText()) }.toList()
+                    .map { CodeWithErrorInfo.parse(it.readText()) }
                     .flatMap { it.errorInfo }
+                    .toList()
             }
 
             // put sources into project dir:
             sourceRoots.forEach { sourceRoot ->
-                val sourceSetDir = projectPath.resolve(sourceRoot.gradleSrcDir).toFile()
+                val sourceSetDir = projectPath.resolve(sourceRoot.gradleSrcDir)
                 testDataDir.resolve(sourceRoot.directoryName).copyRecursively(sourceSetDir)
-                sourceSetDir.walkTopDown().filter { it.isFile }.forEach { file ->
-                    file.modify { CodeWithErrorInfo.parse(file.readText()).code }
-                }
+                sourceSetDir.walk()
+                    .filter { it.isRegularFile() }
+                    .forEach { file ->
+                        file.modify { CodeWithErrorInfo.parse(file.readText()).code }
+                    }
             }
 
             // create Gradle Kotlin source sets for project roots:
@@ -145,7 +147,7 @@ internal class MppHighlightingTestDataWithGradleIT : KGPBaseTest() {
 
     private class CodeWithErrorInfo(
         val code: String,
-        val errorInfo: Iterable<ErrorInfo>
+        val errorInfo: Iterable<ErrorInfo>,
     ) {
         companion object {
             private val errorRegex = "<error(?: descr=\"\\[(.*?)] (.*?)\")?>".toRegex()
@@ -165,7 +167,7 @@ internal class MppHighlightingTestDataWithGradleIT : KGPBaseTest() {
 
     private data class ErrorInfo(
         val expectedErrorKind: String?,
-        val expectedErrorMessage: String?
+        val expectedErrorMessage: String?,
     ) {
         val isAllowedInCli
             get() = when (expectedErrorKind) {
@@ -175,7 +177,7 @@ internal class MppHighlightingTestDataWithGradleIT : KGPBaseTest() {
     }
 
     internal enum class CliCompiler(
-        val targets: List<String>
+        val targets: List<String>,
     ) {
         K2METADATA(listOf("jvm", "js")),
         NATIVE(listOf("linuxX64", "linuxArm64"));
@@ -188,7 +190,7 @@ internal class MppHighlightingTestDataWithGradleIT : KGPBaseTest() {
 
         private fun isTestSuiteValidForCommonCode(
             testDataDir: File,
-            sourceRoots: List<TestCaseSourceRoot>
+            sourceRoots: List<TestCaseSourceRoot>,
         ): Boolean = when {
             sourceRoots.any { bannedDependencies.intersect(it.dependencies.toSet()).isNotEmpty() } -> false
             // Java sources can't be used in intermediate source sets
@@ -216,7 +218,7 @@ internal class MppHighlightingTestDataWithGradleIT : KGPBaseTest() {
             .toList()
 
         override fun provideArguments(
-            context: ExtensionContext
+            context: ExtensionContext,
         ): Stream<out Arguments> {
             val gradleVersions = super.provideArguments(context).map { it.get().first() as GradleVersion }.toList()
 
