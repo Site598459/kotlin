@@ -5,10 +5,17 @@
 
 package org.jetbrains.kotlinx.atomicfu.runners
 
+import org.jetbrains.kotlin.konan.test.irText.AbstractFirLightTreeNativeIrTextTest
 import org.jetbrains.kotlin.test.builders.TestConfigurationBuilder
 import org.jetbrains.kotlin.test.frontend.fir.FirFailingTestSuppressor
+import org.jetbrains.kotlin.test.model.TestModule
 import org.jetbrains.kotlin.test.runners.AbstractFirPsiDiagnosticTest
 import org.jetbrains.kotlin.test.runners.codegen.*
+import org.jetbrains.kotlin.test.services.RuntimeClasspathProvider
+import org.jetbrains.kotlin.test.services.configuration.CommonEnvironmentConfigurator
+import org.jetbrains.kotlin.test.services.configuration.NativeEnvironmentConfigurator
+import org.jetbrains.kotlin.test.directives.NativeEnvironmentConfigurationDirectives.WITH_PLATFORM_LIBS
+import java.io.File
 
 open class AbstractAtomicfuJvmIrTest : AbstractIrBlackBoxCodegenTest() {
     override fun configure(builder: TestConfigurationBuilder) {
@@ -30,6 +37,34 @@ abstract class AbstractAtomicfuFirCheckerTest : AbstractFirPsiDiagnosticTest() {
         with(builder) {
             configureForKotlinxAtomicfu()
             useAfterAnalysisCheckers(::FirFailingTestSuppressor)
+        }
+    }
+}
+
+open class AbstractAtomicfuNativeIrTextTest : AbstractFirLightTreeNativeIrTextTest() {
+    override fun configure(builder: TestConfigurationBuilder) {
+        super.configure(builder)
+        with(builder) {
+            useConfigurators(
+                ::AtomicfuExtensionRegistrarConfigurator,
+                ::CommonEnvironmentConfigurator,
+                ::NativeEnvironmentConfigurator,
+            )
+            defaultDirectives {
+                +WITH_PLATFORM_LIBS
+            }
+
+            useCustomRuntimeClasspathProviders(
+                {
+                    object : RuntimeClasspathProvider(it) {
+                        override fun runtimeClassPaths(module: TestModule): List<File> {
+                            val str = System.getProperty("atomicfuNative.classpath")?.split(File.pathSeparator) ?: emptyList()
+                            val compilerPluginClasspath = System.getProperty("atomicfu.compiler.plugin")?.split(File.pathSeparator) ?: emptyList()
+                            return (str + compilerPluginClasspath).map { File(it) }
+                        }
+                    }
+                }
+            )
         }
     }
 }
