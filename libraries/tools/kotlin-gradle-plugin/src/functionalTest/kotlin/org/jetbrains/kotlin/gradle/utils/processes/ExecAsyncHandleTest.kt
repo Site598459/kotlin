@@ -92,25 +92,28 @@ class ExecAsyncHandleTest {
             standardInput = PipedInputStream(inputForProcess)
         }
 
-        handle.start()
+        try {
+            handle.start()
 
-        inputForProcess.bufferedWriter().use { writer ->
-            writer.appendLine("Blah blah stdin content")
+            inputForProcess.bufferedWriter().apply {
+                appendLine("Blah blah stdin content")
+                flush()
+            }
+            inputForProcess.flush()
+            inputForProcess.close()
+
+            // Wait for process to finish reading and processing input
+            handle.waitForResult()
+
+            assertEquals(
+                listOf("stdin: Blah blah stdin content", ""),
+                processStdout.toString().lines(),
+            )
+
+        } finally {
+            processStdout.close()
+            inputForProcess.close()
         }
-
-        // Wait for process to finish reading and processing input
-        inputForProcess.close()
-        handle.waitForResult()
-
-        assertEquals(
-            listOf("stdin: Blah blah stdin content", ""),
-            processStdout.toString().lines(),
-        )
-
-        handle.abort()
-
-        inputForProcess.close()
-        processStdout.close()
     }
 
     @Test
