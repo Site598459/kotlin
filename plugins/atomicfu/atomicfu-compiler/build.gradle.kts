@@ -214,8 +214,9 @@ val nativeTest = nativeTest(
     customTestDependencies = listOf(atomicfuNativeKlib),
     compilerPluginDependencies = listOf(atomicfuCompilerPluginForTests)
 ) {
+    val localAtomicfuNativeKlib: FileCollection = atomicfuNativeKlib
     doFirst {
-        systemProperty("atomicfuNative.classpath", atomicfuNativeKlib.asPath)
+        systemProperty("atomicfuNative.classpath", localAtomicfuNativeKlib.asPath)
     }
 }
 
