@@ -21,28 +21,35 @@ internal class KaBaseContentScopeProvider : KaContentScopeProvider {
             return baseContentScope
         }
 
-        val enlargementScopes = mutableListOf<GlobalSearchScope>(baseContentScope)
-        val shadowedScopes = mutableListOf<GlobalSearchScope>()
+        val enlargementScopes = mutableListOf(baseContentScope)
+        val restrictionScopes = mutableListOf<GlobalSearchScope>()
 
         refiners.forEach { refiner ->
             enlargementScopes.addAll(
                 refiner.getEnlargementScopes(module).filter { !GlobalSearchScope.isEmptyScope(it) }
             )
 
-            shadowedScopes.addAll(
+            restrictionScopes.addAll(
                 refiner.getRestrictionScopes(module).filter { !GlobalSearchScope.isEmptyScope(it) }
             )
         }
 
+        return mergeScopes(module, enlargementScopes, restrictionScopes)
+    }
+
+    private fun mergeScopes(
+        module: KaModule,
+        enlargementScopes: MutableList<GlobalSearchScope>,
+        restrictionScopes: MutableList<GlobalSearchScope>,
+    ): GlobalSearchScope {
         val scopeMerger = KotlinGlobalSearchScopeMerger.getInstance(module.project)
 
         val mergedEnlargementScope = scopeMerger.union(enlargementScopes)
-        if (shadowedScopes.isEmpty()) {
+        if (restrictionScopes.isEmpty()) {
             return mergedEnlargementScope
         }
 
-        val mergedShadowedScope = scopeMerger.union(shadowedScopes)
-
-        return mergedEnlargementScope.intersectWith(GlobalSearchScope.notScope(mergedShadowedScope))
+        val mergedRestrictionScope = scopeMerger.union(restrictionScopes)
+        return mergedEnlargementScope.intersectWith(mergedRestrictionScope)
     }
 }
