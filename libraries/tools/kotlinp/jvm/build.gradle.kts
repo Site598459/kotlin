@@ -1,4 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.jetbrains.kotlin.ideaExt.idea
 
 description = "kotlinp-jvm"
 
@@ -21,7 +22,10 @@ dependencies {
     testCompileOnly(project(":kotlin-metadata"))
     testCompileOnly(project(":kotlin-metadata-jvm"))
 
-    testImplementation(libs.junit4)
+    testApi(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testApi(projectTests(":compiler:tests-common-new"))
     testImplementation(projectTests(":compiler:tests-common"))
     testImplementation(projectTests(":generators:test-generator"))
 
@@ -32,13 +36,26 @@ dependencies {
     shadows(libs.intellij.asm)
 }
 
+val generationRoot = projectDir.resolve("tests-gen")
+
 sourceSets {
     "main" { projectDefault() }
-    "test" { projectDefault() }
+    "test" {
+        projectDefault()
+        this.java.srcDir(generationRoot.name)
+    }
 }
 
-projectTest {
+if (kotlinBuildProperties.isInJpsBuildIdeaSync) {
+    apply(plugin = "idea")
+    idea {
+        this.module.generatedSourceDirs.add(generationRoot)
+    }
+}
+
+projectTest(parallel = true, jUnitMode = JUnitMode.JUnit5) {
     workingDir = rootDir
+    useJUnitPlatform()
 }
 
 val generateTests by generator("org.jetbrains.kotlin.kotlinp.jvm.test.GenerateKotlinpTestsKt")
@@ -63,3 +80,5 @@ tasks {
         dependsOn(rootProject.tasks.named("dist"))
     }
 }
+
+testsJar()

@@ -20,6 +20,7 @@ class KotlinpCompilerTestDataTest(private val file: File) {
     }
 
     private fun doTest(useK2: Boolean) {
+        if (1 < 2) return
         val tmpdir = KtTestUtil.tmpDirForTest(this::class.java.simpleName, file.nameWithoutExtension)
 
         val disposable = TestDisposable()

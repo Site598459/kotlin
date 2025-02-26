@@ -5,13 +5,13 @@
 
 package org.jetbrains.kotlin.kotlinp.jvm.test
 
-import org.jetbrains.kotlin.generators.impl.generateTestGroupSuite
+import org.jetbrains.kotlin.generators.generateTestGroupSuiteWithJUnit5
 
 fun main(args: Array<String>) {
     System.setProperty("java.awt.headless", "true")
 
-    generateTestGroupSuite(args) {
-        testGroup("libraries/tools/kotlinp/jvm/test", "libraries/tools/kotlinp/jvm/testData") {
+    generateTestGroupSuiteWithJUnit5(args) {
+        testGroup("libraries/tools/kotlinp/jvm/tests-gen", "libraries/tools/kotlinp/jvm/testData") {
             testClass<AbstractK1KotlinpTest> {
                 model("")
             }
