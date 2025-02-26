@@ -193,12 +193,13 @@ projectTest(jUnitMode = JUnitMode.JUnit5) {
     val localAtomicfuJsIrRuntimeForTests: FileCollection = atomicfuJsIrRuntimeForTests
     val localAtomicfuJsClasspath: FileCollection = atomicfuJsClasspath
     val localAtomicfuJvmClasspath: FileCollection = atomicfuJvmClasspath
+    val localAtomicfuCompilerPluginClasspath: FileCollection = atomicfuCompilerPluginForTests
 
     doFirst {
         systemProperty("atomicfuJsIrRuntimeForTests.classpath", localAtomicfuJsIrRuntimeForTests.asPath)
         systemProperty("atomicfuJs.classpath", localAtomicfuJsClasspath.asPath)
         systemProperty("atomicfuJvm.classpath", localAtomicfuJvmClasspath.asPath)
-        systemProperty("atomicfu.compiler.plugin", atomicfuCompilerPluginForTests.asPath)
+        systemProperty("atomicfu.compiler.plugin", localAtomicfuCompilerPluginClasspath.asPath)
     }
 }
 
