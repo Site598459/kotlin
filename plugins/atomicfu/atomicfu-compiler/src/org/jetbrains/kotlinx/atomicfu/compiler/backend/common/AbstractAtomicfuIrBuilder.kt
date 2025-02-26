@@ -296,7 +296,7 @@ abstract class AbstractAtomicfuIrBuilder(
         val backingField = requireNotNull(property.backingField) { "Backing field of the property $property should not be null" }
         return IrPropertyReferenceImpl(
             UNDEFINED_OFFSET, UNDEFINED_OFFSET,
-            type = backingField.type,
+            type = atomicfuSymbols.buildSimpleType(irBuiltIns.kMutableProperty0Class, listOf(backingField.type)),
             symbol = property.symbol,
             typeArgumentsCount = 0,
             field = backingField.symbol,
