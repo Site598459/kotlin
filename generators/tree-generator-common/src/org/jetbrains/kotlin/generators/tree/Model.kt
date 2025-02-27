@@ -23,4 +23,14 @@ data class Model<Element : AbstractElement<Element, *, *>>(
             recurse(element)
         }
     }
+
+    fun addPureAbstractElement(pureAbstractElement: ClassRef<*>) {
+        for (el in elements) {
+            if (el.kind?.isInterface != true &&
+                el.allParents.none<ImplementationKindOwner> { it.kind == ImplementationKind.AbstractClass || it.kind == ImplementationKind.SealedClass }
+            ) {
+                el.otherParents.add(pureAbstractElement)
+            }
+        }
+    }
 }
