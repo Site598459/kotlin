@@ -5,7 +5,7 @@
 
 package org.jetbrains.kotlin.gradle.plugin.diagnostics
 
-import org.gradle.api.Project
+import org.gradle.api.model.ObjectFactory
 import org.jetbrains.kotlin.gradle.utils.newInstance
 
 internal abstract class ProblemsReporterG76 : ProblemsReporter {
@@ -14,6 +14,6 @@ internal abstract class ProblemsReporterG76 : ProblemsReporter {
     }
 
     class Factory : ProblemsReporter.Factory {
-        override fun getInstance(project: Project) = project.objects.newInstance<ProblemsReporterG76>()
+        override fun getInstance(objects: ObjectFactory) = objects.newInstance<ProblemsReporterG76>()
     }
 }

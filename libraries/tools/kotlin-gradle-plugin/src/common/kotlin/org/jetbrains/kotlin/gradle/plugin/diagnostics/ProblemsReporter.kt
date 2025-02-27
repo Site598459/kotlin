@@ -6,10 +6,11 @@
 package org.jetbrains.kotlin.gradle.plugin.diagnostics
 
 import org.gradle.api.InvalidUserCodeException
-import org.gradle.api.Project
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.problems.*
+import org.gradle.api.services.BuildService
+import org.gradle.api.services.BuildServiceParameters
 import org.jetbrains.kotlin.gradle.plugin.VariantImplementationFactories
-import org.jetbrains.kotlin.gradle.plugin.variantImplementationFactory
 import org.jetbrains.kotlin.gradle.utils.newInstance
 import javax.inject.Inject
 
@@ -17,7 +18,7 @@ internal interface ProblemsReporter {
     fun reportProblemDiagnostic(diagnostic: ToolingDiagnostic)
 
     interface Factory : VariantImplementationFactories.VariantImplementationFactory {
-        fun getInstance(project: Project): ProblemsReporter
+        fun getInstance(objects: ObjectFactory): ProblemsReporter
     }
 }
 
@@ -31,7 +32,7 @@ internal fun ProblemReporter.report(diagnostic: ToolingDiagnostic, fillSpec: (Pr
 
 internal abstract class DefaultProblemsReporter @Inject constructor(
     private val problems: Problems,
-) : ProblemsReporter {
+) : BuildService<BuildServiceParameters.None>, ProblemsReporter {
     override fun reportProblemDiagnostic(diagnostic: ToolingDiagnostic) {
         problems.reporter.report(diagnostic) { fillSpec(it, diagnostic) }
     }
@@ -47,7 +48,7 @@ internal abstract class DefaultProblemsReporter @Inject constructor(
     private fun problemGroup(group: DiagnosticGroup): ProblemGroup = KGPProblemGroup(group)
 
     class Factory : ProblemsReporter.Factory {
-        override fun getInstance(project: Project) = project.objects.newInstance<DefaultProblemsReporter>()
+        override fun getInstance(objects: ObjectFactory) = objects.newInstance<DefaultProblemsReporter>()
     }
 }
 
@@ -73,10 +74,6 @@ internal class KGPProblemGroup(val group: DiagnosticGroup) : ProblemGroup {
         return result
     }
 }
-
-internal val Project.problemsReporter
-    get() = variantImplementationFactory<ProblemsReporter.Factory>()
-        .getInstance(this)
 
 internal fun ToolingDiagnostic.configureProblemSpec(spec: ProblemSpec): ProblemSpec {
     var mSpec = spec
