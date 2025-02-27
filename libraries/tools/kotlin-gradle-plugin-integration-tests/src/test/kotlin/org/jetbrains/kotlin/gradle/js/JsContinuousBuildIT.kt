@@ -14,13 +14,9 @@ import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
-import kotlin.io.path.absolute
 import kotlin.io.path.exists
 import kotlin.io.path.readText
-import kotlin.system.exitProcess
 import kotlin.test.assertEquals
-import kotlin.time.Duration.Companion.minutes
-import kotlin.time.TimeSource
 
 /**
  * Use [KGPDaemonsBaseTest], because maybe a fresh daemon will avoid fs watch overflow issues?
@@ -33,24 +29,9 @@ class JsContinuousBuildIT : KGPDaemonsBaseTest() {
     fun testJsRunContinuousBuild(
         gradleVersion: GradleVersion,
     ) {
-
         project("js-run-continuous", gradleVersion) {
 
-            // Use this file to trigger a kill switch to force-kill the Gradle build upon test completion,
-            // because `--no-daemon` is disabled by `--continuous`.
-            val endTestKillSwitchFile = projectPath.resolve("end-test-kill-switch").absolute().toFile()
-
             val compiledJs = projectPath.resolve("build/compileSync/js/main/developmentExecutable/kotlin/js-run-continuous.js")
-
-            buildScriptInjection {
-                thread(name = "testJsRunContinuousBuild kill switch", isDaemon = true) {
-                    val timeoutMark = TimeSource.Monotonic.markNow() + 5.minutes
-                    while (timeoutMark.hasPassedNow() || !endTestKillSwitchFile.exists()) {
-                        Thread.sleep(1000)
-                    }
-                    exitProcess(123123)
-                }
-            }
 
             val daemonRelease = PipedOutputStream()
             val daemonStdin = PipedInputStream(daemonRelease)
@@ -85,9 +66,6 @@ class JsContinuousBuildIT : KGPDaemonsBaseTest() {
                 ),
                 inputStream = daemonStdin,
             ) {
-                // trigger the Gradle build kill-switch
-                endTestKillSwitchFile.createNewFile()
-
                 checker.join()
 
                 assertFileContains(
