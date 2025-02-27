@@ -202,6 +202,6 @@ internal fun printSymbolRemapper(
     model: Model,
     type: ClassRef<*>,
     makePrinter: (ImportCollectingPrinter, List<Element>, ClassRef<*>) -> AbstractSymbolRemapperPrinter,
-) = printGeneratedType(generationPath, TREE_GENERATOR_README, type.packageName, type.simpleName) {
+) = printGeneratedType(generationPath, "compiler/ir/ir.tree/tree-generator/ReadMe.md", type.packageName, type.simpleName) {
     makePrinter(this, model.elements, type).printSymbolRemapper()
 }
