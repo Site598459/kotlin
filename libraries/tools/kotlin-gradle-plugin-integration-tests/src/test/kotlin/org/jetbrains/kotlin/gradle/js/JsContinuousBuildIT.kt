@@ -19,7 +19,14 @@ import kotlin.io.path.readText
 import kotlin.test.assertEquals
 
 /**
- * Use [KGPDaemonsBaseTest], because maybe a fresh daemon will avoid fs watch overflow issues?
+ * Test changes to files in continuous build mode will trigger recompilation.
+ * Since Kotlin/JS uses external processes (Yarn, Webpack) we want to check they are managed correctly.
+ *
+ * Use [KGPDaemonsBaseTest] because:
+ * - A fresh Gradle daemon prevents VFS issues
+ *  (e.g. https://github.com/gradle/gradle/issues/26946).
+ *- A bug (in KGP, or configuration of the external processes) could cause the Gradle build, and thus daemon, to hang.
+ *  Using independent daemons per-test means one hanging test won't affect others.
  */
 class JsContinuousBuildIT : KGPDaemonsBaseTest() {
 
@@ -54,7 +61,7 @@ class JsContinuousBuildIT : KGPDaemonsBaseTest() {
                     Thread.sleep(1000)
                 }
 
-                // close the stream, which will allow Gradle to close the stream
+                // close the stream, which will allow Gradle to finish the build
                 daemonRelease.close()
             }
 
@@ -81,7 +88,7 @@ class JsContinuousBuildIT : KGPDaemonsBaseTest() {
                 // verify yarn dependency resolution can run
                 assertTasksExecuted(":kotlinStoreYarnLock")
 
-                // verify there's no error in
+                // verify there's no error in the ExecAsyncHandle thread management
                 assertOutputDoesNotContain("Exception in thread")
 
                 // Verify webpack starts and is aborted.
