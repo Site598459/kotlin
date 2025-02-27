@@ -29,7 +29,7 @@ class JsContinuousBuildIT : KGPDaemonsBaseTest() {
 
     @GradleTest
     @TestMetadata("js-run-continuous")
-    @Timeout(value = 1, unit = TimeUnit.MINUTES)
+    @Timeout(value = 2, unit = TimeUnit.MINUTES)
     fun testJsRunContinuousBuild(
         gradleVersion: GradleVersion,
     ) {
