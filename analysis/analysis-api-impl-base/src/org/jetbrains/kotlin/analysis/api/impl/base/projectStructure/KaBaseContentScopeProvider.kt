@@ -29,9 +29,14 @@ internal class KaBaseContentScopeProvider : KaContentScopeProvider {
                 refiner.getEnlargementScopes(module).filter { !GlobalSearchScope.isEmptyScope(it) }
             )
 
-            restrictionScopes.addAll(
-                refiner.getRestrictionScopes(module).filter { !GlobalSearchScope.isEmptyScope(it) }
-            )
+            val refinerRestrictionScopes = refiner.getRestrictionScopes(module)
+
+            // Since we have to intersect the content scope with each restriction scope, if any restriction scope is empty, the resulting
+            // content scope will be completely empty.
+            if (refinerRestrictionScopes.any { GlobalSearchScope.isEmptyScope(it) }) {
+                return GlobalSearchScope.EMPTY_SCOPE
+            }
+            restrictionScopes.addAll(refinerRestrictionScopes)
         }
 
         return mergeScopes(module, enlargementScopes, restrictionScopes)
@@ -49,7 +54,8 @@ internal class KaBaseContentScopeProvider : KaContentScopeProvider {
             return mergedEnlargementScope
         }
 
-        val mergedRestrictionScope = scopeMerger.union(restrictionScopes)
-        return mergedEnlargementScope.intersectWith(mergedRestrictionScope)
+        // `KotlinGlobalSearchScopeMerger` cannot merge intersections of scopes, so for now we have to apply the scopes as individual
+        // intersections. In the future, we might consider to implement intersection merging as well.
+        return restrictionScopes.fold(mergedEnlargementScope) { resultScope, scope -> resultScope.intersectWith(scope) }
     }
 }
