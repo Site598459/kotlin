@@ -99,7 +99,7 @@ object IrTree : AbstractTreeBuilder() {
         needTransformMethod()
         transformByChildren = true
 
-        fun offsetField(prefix: String) = field(prefix + "Offset", int, mutable = false) {
+        fun offsetField(prefix: String) = field(prefix + "Offset", int, mutable = true) {
             kDoc = """
             The $prefix offset of the syntax node from which this IR node was generated,
             in number of characters from the start of the source file. If there is no source information for this IR node,
@@ -108,6 +108,7 @@ object IrTree : AbstractTreeBuilder() {
             
             @see IrFileEntry.getSourceRangeInfo
             """.trimIndent()
+            deepCopyExcludeFromApply = true
         }
 
         +offsetField("start")
