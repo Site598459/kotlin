@@ -72,20 +72,37 @@ private fun Project.showColoredDiagnostics(): Boolean {
 private val Project.isAttachedToTerminal
     get() = providers.of(IsAttachedToTerminalValueSource::class.java) {}.map { it.value }
 
+/**
+ * Configuration cache value source that determines if the application is running in an
+ * interactive terminal with advanced capabilities across different platforms.
+ */
 private abstract class IsAttachedToTerminalValueSource : ConfigurationCacheOpaqueValueSource<Boolean>("isAttachedToTerminal") {
     override fun obtainValue(): Boolean {
-        // Check various environment variables that indicate terminal capabilities
-        val term = System.getenv("TERM")              // Basic terminal type
+        // Unix/Linux/macOS terminal detection
+        val term = System.getenv("TERM")              // Standard UNIX environment variable
         val colorTerm = System.getenv("COLORTERM")    // Explicit color support flag
         val termProgram = System.getenv("TERM_PROGRAM") // Terminal emulator program
 
-        // Check multiple indicators of a terminal that supports colors:
-        // - TERM exists and isn't "dumb" (basic terminal)
-        // - COLORTERM exists (explicit color support)
-        // - TERM_PROGRAM exists (modern terminal emulator)
-        return (term != null && term != "dumb") ||
-                colorTerm != null ||
-                termProgram != null
+        // Common terminal types:
+        // - "dumb": Basic terminal with minimal features (often in CI environments or redirected output)
+        // - "xterm", "xterm-256color": Standard terminal types with good feature support
+        // - Terminal emulators like "iTerm.app", "Apple_Terminal" will set TERM_PROGRAM
+
+        // Windows-specific terminal detection
+        val ansicon = System.getenv("ANSICON")        // Set by ANSICON and similar Windows terminal enhancers
+        val conEmuANSI = System.getenv("ConEmuANSI")  // Set by ConEmu terminal
+        val wtSession = System.getenv("WT_SESSION")    // Set by Windows Terminal
+
+        // Check for PowerShell
+        val psVersion = System.getenv("PSModulePath") // Typically set in PowerShell environment
+
+        return (term != null && term != "dumb") ||    // Unix terminal check
+                colorTerm != null ||                  // Color support check
+                termProgram != null ||                // Modern terminal emulator check
+                ansicon != null ||                    // Windows ANSI support
+                "ON" == conEmuANSI ||                 // ConEmu with ANSI
+                wtSession != null ||                  // Windows Terminal
+                (psVersion != null && System.console() != null) // Interactive PowerShell session
     }
 }
 
