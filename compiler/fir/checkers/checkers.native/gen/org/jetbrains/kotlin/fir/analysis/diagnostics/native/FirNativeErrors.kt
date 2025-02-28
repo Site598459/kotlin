@@ -67,6 +67,7 @@ object FirNativeErrors {
     val CONSTRUCTOR_MATCHES_SEVERAL_SUPER_CONSTRUCTORS: KtDiagnosticFactory1<FqName> = KtDiagnosticFactory1("CONSTRUCTOR_MATCHES_SEVERAL_SUPER_CONSTRUCTORS", ERROR, SourceElementPositioningStrategies.DEFAULT, KtElement::class)
     val CONFLICTING_OBJC_OVERLOADS: KtDiagnosticFactory1<Collection<FirBasedSymbol<*>>> = KtDiagnosticFactory1("CONFLICTING_OBJC_OVERLOADS", ERROR, SourceElementPositioningStrategies.DEFAULT, PsiElement::class)
     val INAPPLICABLE_OBJC_OVERRIDE: KtDiagnosticFactory0 = KtDiagnosticFactory0("INAPPLICABLE_OBJC_OVERRIDE", ERROR, SourceElementPositioningStrategies.DEFAULT, PsiElement::class)
+    val IDENTITY_HASH_CODE_ON_VALUE_TYPE_OBJECT: KtDiagnosticFactory1<ConeKotlinType> = KtDiagnosticFactory1("IDENTITY_HASH_CODE_ON_VALUE_TYPE_OBJECT", ERROR, SourceElementPositioningStrategies.DEFAULT, KtElement::class)
 
     init {
         RootDiagnosticRendererFactory.registerFactory(FirNativeErrorsDefaultMessages)

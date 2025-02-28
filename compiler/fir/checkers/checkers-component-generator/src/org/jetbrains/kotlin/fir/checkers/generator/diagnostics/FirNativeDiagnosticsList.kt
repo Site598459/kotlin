@@ -107,5 +107,8 @@ object NATIVE_DIAGNOSTICS_LIST : DiagnosticList("FirNativeErrors") {
             parameter<Collection<Symbol>>("conflictingOverloads")
         }
         val INAPPLICABLE_OBJC_OVERRIDE by error<PsiElement>()
+        val IDENTITY_HASH_CODE_ON_VALUE_TYPE_OBJECT by error<KtElement> {
+            parameter<ConeKotlinType>("type")
+        }
     }
 }
