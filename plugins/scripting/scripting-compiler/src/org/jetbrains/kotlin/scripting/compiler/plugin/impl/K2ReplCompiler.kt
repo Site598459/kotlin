@@ -58,6 +58,8 @@ import kotlin.script.experimental.api.*
 import kotlin.script.experimental.host.ScriptingHostConfiguration
 import kotlin.script.experimental.jvm.JvmDependency
 import kotlin.script.experimental.jvm.defaultJvmScriptingHostConfiguration
+import kotlin.script.experimental.jvm.jvm
+import kotlin.script.experimental.jvm.jvmTarget
 import kotlin.script.experimental.util.LinkedSnippet
 import kotlin.script.experimental.util.LinkedSnippetImpl
 import kotlin.script.experimental.util.add
@@ -325,7 +327,7 @@ private fun compileImpl(
         extensionRegistrars,
         compilerConfiguration.languageVersionSettings,
         compilerConfiguration.useFirExtraCheckers,
-        jvmTarget = JvmTarget.DEFAULT, // TODO: from script config
+        jvmTarget = selectJvmTarget(scriptCompilationConfiguration),
         lookupTracker = null,
         enumWhenTracker = null,
         importTracker = null,
@@ -373,4 +375,20 @@ private fun compileImpl(
     ).onSuccess { compiledScript ->
         ResultWithDiagnostics.Success(compiledScript, messageCollector.diagnostics)
     }
+}
+
+// Find the appropriate jvm target for the compiler from the ScriptCompilationConfiguration.
+// Since this can be configured in two places, we also check both places agree on the same value (if it is configured twice).
+private fun selectJvmTarget(configuration: ScriptCompilationConfiguration): JvmTarget {
+    val jvmTargetFromBlock = configuration[ScriptCompilationConfiguration.jvm.jvmTarget]?.let { JvmTarget.fromString(it) }
+    val jvmTargetFromOptions = configuration[ScriptCompilationConfiguration.compilerOptions]
+        ?.zipWithNext()
+        ?.firstOrNull { it.first == "-jvm-target" }
+        ?.second
+        ?.let { JvmTarget.fromString(it) }
+
+    if (jvmTargetFromBlock != null && jvmTargetFromOptions != null && jvmTargetFromBlock != jvmTargetFromOptions) {
+        throw IllegalArgumentException("JVM target in ScriptCompilationConfiguration is defined differently in `jvm.jvmTarget` (${jvmTargetFromBlock}) vs in `compilerOptions` (${jvmTargetFromOptions})")
+    }
+    return jvmTargetFromBlock ?: jvmTargetFromOptions ?: JvmTarget.DEFAULT
 }
