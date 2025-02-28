@@ -38,11 +38,55 @@ import org.jetbrains.kotlin.utils.addToStdlib.runUnless
 @OptIn(SessionConfiguration::class)
 object FirJvmSessionFactory : FirAbstractSessionFactory<FirJvmSessionFactory.LibraryContext, FirJvmSessionFactory.SourceContext>() {
 
+    // ==================================== Shared library session ====================================
+
+    fun createSharedLibrarySession(
+        mainModuleName: Name,
+        sessionProvider: FirProjectSessionProvider,
+        moduleDataProvider: ModuleDataProvider,
+        projectEnvironment: AbstractProjectEnvironment,
+        extensionRegistrars: List<FirExtensionRegistrar>,
+        scope: AbstractProjectFileSearchScope,
+        packagePartProvider: PackagePartProvider,
+        languageVersionSettings: LanguageVersionSettings,
+        predefinedJavaComponents: FirSharableJavaComponents?,
+    ): FirSession {
+        val context = LibraryContext(predefinedJavaComponents, projectEnvironment)
+        return createSharedLibrarySession(
+            mainModuleName,
+            context,
+            sessionProvider,
+            moduleDataProvider,
+            languageVersionSettings,
+            extensionRegistrars
+        ) { session, moduleData, scopeProvider, extensionSyntheticFunctionInterfaceProvider ->
+            listOfNotNull(
+                extensionSyntheticFunctionInterfaceProvider,
+                runUnless(languageVersionSettings.getFlag(AnalysisFlags.stdlibCompilation)) {
+                    initializeBuiltinsProvider(
+                        session,
+                        moduleData,
+                        scopeProvider,
+                        projectEnvironment.getKotlinClassFinder(scope)
+                    )
+                },
+                FirBuiltinSyntheticFunctionInterfaceProvider(session, moduleData, scopeProvider),
+                FirCloneableSymbolProvider(session, moduleData, scopeProvider),
+                OptionalAnnotationClassesProvider(
+                    session,
+                    moduleDataProvider,
+                    scopeProvider,
+                    packagePartProvider
+                )
+            )
+        }
+    }
+
     // ==================================== Library session ====================================
 
     fun createLibrarySession(
-        mainModuleName: Name,
         sessionProvider: FirProjectSessionProvider,
+        sharedLibrarySession: FirSession,
         moduleDataProvider: ModuleDataProvider,
         projectEnvironment: AbstractProjectEnvironment,
         extensionRegistrars: List<FirExtensionRegistrar>,
@@ -54,14 +98,14 @@ object FirJvmSessionFactory : FirAbstractSessionFactory<FirJvmSessionFactory.Lib
         val kotlinClassFinder = projectEnvironment.getKotlinClassFinder(scope)
         val context = LibraryContext(predefinedJavaComponents, projectEnvironment)
         return createLibrarySession(
-            mainModuleName,
             context,
+            sharedLibrarySession,
             sessionProvider,
             moduleDataProvider,
             languageVersionSettings,
             extensionRegistrars,
-            createProviders = { session, builtinsModuleData, kotlinScopeProvider, syntheticFunctionInterfaceProvider ->
-                listOfNotNull(
+            createProviders = { session, kotlinScopeProvider ->
+                listOf(
                     JvmClassFileBasedSymbolProvider(
                         session,
                         moduleDataProvider,
@@ -70,18 +114,6 @@ object FirJvmSessionFactory : FirAbstractSessionFactory<FirJvmSessionFactory.Lib
                         kotlinClassFinder,
                         projectEnvironment.getFirJavaFacade(session, moduleDataProvider.allModuleData.last(), scope)
                     ),
-                    runUnless(languageVersionSettings.getFlag(AnalysisFlags.stdlibCompilation)) {
-                        initializeBuiltinsProvider(session, builtinsModuleData, kotlinScopeProvider, kotlinClassFinder)
-                    },
-                    FirBuiltinSyntheticFunctionInterfaceProvider(session, builtinsModuleData, kotlinScopeProvider),
-                    syntheticFunctionInterfaceProvider,
-                    FirCloneableSymbolProvider(session, builtinsModuleData, kotlinScopeProvider),
-                    OptionalAnnotationClassesProvider(
-                        session,
-                        moduleDataProvider,
-                        kotlinScopeProvider,
-                        packagePartProvider
-                    )
                 )
             }
         )

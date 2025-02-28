@@ -32,11 +32,39 @@ import org.jetbrains.kotlin.utils.addToStdlib.runUnless
 @OptIn(SessionConfiguration::class)
 object FirMetadataSessionFactory : FirAbstractSessionFactory<Nothing?, Nothing?>() {
 
+    // ==================================== Shared library session ====================================
+
+    fun createSharedLibrarySession(
+        mainModuleName: Name,
+        sessionProvider: FirProjectSessionProvider,
+        moduleDataProvider: ModuleDataProvider,
+        languageVersionSettings: LanguageVersionSettings,
+        extensionRegistrars: List<FirExtensionRegistrar>,
+    ): FirSession {
+        return createSharedLibrarySession(
+            mainModuleName,
+            context = null,
+            sessionProvider,
+            moduleDataProvider,
+            languageVersionSettings,
+            extensionRegistrars
+        ) { session, moduleData, kotlinScopeProvider, syntheticFunctionInterfaceProvider ->
+            listOfNotNull(
+                syntheticFunctionInterfaceProvider,
+                runUnless(languageVersionSettings.getFlag(AnalysisFlags.stdlibCompilation)) {
+                    FirFallbackBuiltinSymbolProvider(session, moduleData, kotlinScopeProvider)
+                },
+                FirBuiltinSyntheticFunctionInterfaceProvider(session, moduleData, kotlinScopeProvider),
+                FirCloneableSymbolProvider(session, moduleData, kotlinScopeProvider),
+            )
+        }
+    }
+
     // ==================================== Library session ====================================
 
     fun createLibrarySession(
-        mainModuleName: Name,
         sessionProvider: FirProjectSessionProvider,
+        sharedLibrarySession: FirSession,
         moduleDataProvider: ModuleDataProvider,
         projectEnvironment: AbstractProjectEnvironment,
         extensionRegistrars: List<FirExtensionRegistrar>,
@@ -46,13 +74,13 @@ object FirMetadataSessionFactory : FirAbstractSessionFactory<Nothing?, Nothing?>
         languageVersionSettings: LanguageVersionSettings,
     ): FirSession {
         return createLibrarySession(
-            mainModuleName,
             context = null,
+            sharedLibrarySession,
             sessionProvider,
             moduleDataProvider,
             languageVersionSettings,
             extensionRegistrars,
-            createProviders = { session, builtinsModuleData, kotlinScopeProvider, syntheticFunctionInterfaceProvider ->
+            createProviders = { session, kotlinScopeProvider ->
                 listOfNotNull(
                     MetadataSymbolProvider(
                         session,
@@ -69,12 +97,6 @@ object FirMetadataSessionFactory : FirAbstractSessionFactory<Nothing?, Nothing?>
                             resolvedKLibs.map { it.library }
                         )
                     },
-                    syntheticFunctionInterfaceProvider,
-                    runUnless(languageVersionSettings.getFlag(AnalysisFlags.stdlibCompilation)) {
-                        FirFallbackBuiltinSymbolProvider(session, builtinsModuleData, kotlinScopeProvider)
-                    },
-                    FirBuiltinSyntheticFunctionInterfaceProvider(session, builtinsModuleData, kotlinScopeProvider),
-                    FirCloneableSymbolProvider(session, builtinsModuleData, kotlinScopeProvider),
                 )
             }
         )
